@@ -1,5 +1,6 @@
 const path = require("path");
 const fsPromise = require("fs/promises");
+const userRoles = require("../config/userRoles");
 
 const mockUserRepo = () => {
   let users = require("./data/users.json");
@@ -18,8 +19,13 @@ const mockUserRepo = () => {
     findUser: function (username) {
       return users.find((it) => it.username === username);
     },
-    addUser: async function (username, pwd, refreshToken = "") {
-      users = [...users, { username, pwd, refreshToken }];
+    addUser: async function (
+      username,
+      pwd,
+      refreshToken = "",
+      roles = { user: userRoles.user }
+    ) {
+      users = [...users, { username, pwd, refreshToken, roles }];
       save(users);
     },
     updateUser: async function (username, updates) {

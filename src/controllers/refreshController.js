@@ -21,17 +21,16 @@ const refreshAccesstoken = (req, res, next) => {
     .find((it) => it.refreshToken === refreshToken);
 
   if (!targetUser) {
-    console.log("Could not find user");
-    res.sendStatus(403);
+    res.sendStatus(401);
   }
 
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
-    if (err || decoded.username !== targetUser.username) {
-      console.log("Cannot verify refresh token", err);
-      return res.sendStatus(403);
+    const { userInfo } = decoded;
+    if (err || userInfo?.username !== targetUser.username) {
+      return res.sendStatus(401);
     }
 
-    const accessToken = createAccessToken(targetUser.username);
+    const accessToken = createAccessToken(targetUser);
 
     res.status(200).json({ accessToken });
   });

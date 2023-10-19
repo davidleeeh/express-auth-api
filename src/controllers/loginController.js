@@ -23,8 +23,8 @@ const loginUser = async (req, res, next) => {
 
   const isMatched = await bcrypt.compare(pwd, targetUser.pwd);
   if (isMatched) {
-    const accessToken = createAccessToken(targetUser.username);
-    const refreshToken = createRefreshToken(targetUser.username);
+    const accessToken = createAccessToken(targetUser);
+    const refreshToken = createRefreshToken(targetUser);
 
     await userRepo.updateUser(targetUser.username, { refreshToken });
 

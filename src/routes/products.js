@@ -1,4 +1,5 @@
 const express = require("express");
+const { header } = require("express-validator");
 const {
   listProducts,
   getProduct,
@@ -7,7 +8,8 @@ const {
   deleteProduct
 } = require("../controllers/productControllers");
 const verifyJWT = require("../middlewares/verifyJWT");
-const { header } = require("express-validator");
+const verifyRoles = require("../middlewares/verifyRoles");
+const userRoles = require("../config/userRoles");
 
 const router = express.Router();
 
@@ -22,7 +24,12 @@ router.use(
     .withMessage("Invalid authorization header"),
   verifyJWT
 );
-router.route("/").get(listProducts).post(addProduct);
-router.route("/:id").get(getProduct).put(updateProduct).delete(deleteProduct);
+router.route("/").get(listProducts);
+router
+  .route("/:id")
+  .get(verifyRoles(userRoles.user), getProduct)
+  .post(verifyRoles(userRoles.admin, userRoles.editor), addProduct)
+  .put(verifyRoles(userRoles.admin, userRoles.editor), updateProduct)
+  .delete(verifyRoles(userRoles.admin), deleteProduct);
 
 module.exports = router;
