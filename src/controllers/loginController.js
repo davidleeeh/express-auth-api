@@ -1,6 +1,6 @@
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcrypt");
-const mockUserRepo = require("../mocks/mockUserRepo");
+const User = require("../models/userModel");
 const {
   createAccessToken,
   createRefreshToken,
@@ -13,10 +13,9 @@ const loginUser = async (req, res, next) => {
     return res.status(400).json({ error: `${errors[0].msg}` });
   }
 
-  const userRepo = mockUserRepo();
   const { username, pwd } = req.body;
 
-  const targetUser = userRepo.findUser(username);
+  const targetUser = await User.findOne({ username });
   if (!targetUser) {
     return res.sendStatus(404);
   }
@@ -26,7 +25,12 @@ const loginUser = async (req, res, next) => {
     const accessToken = createAccessToken(targetUser);
     const refreshToken = createRefreshToken(targetUser);
 
-    await userRepo.updateUser(targetUser.username, { refreshToken });
+    await User.updateOne(
+      { username },
+      {
+        refreshToken
+      }
+    );
 
     res
       .cookie("jwt", refreshToken, jwtCookieOptions)

@@ -1,9 +1,9 @@
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
-const mockUserRepo = require("../mocks/mockUserRepo");
+const User = require("../models/userModel");
 const { createAccessToken } = require("../lib/userToken");
 
-const refreshAccesstoken = (req, res, next) => {
+const refreshAccesstoken = async (req, res, next) => {
   const { errors } = validationResult(req);
   if (errors.length > 0) {
     return res.sendStatus(401);
@@ -15,10 +15,7 @@ const refreshAccesstoken = (req, res, next) => {
 
   console.log(refreshToken);
 
-  const userRepo = mockUserRepo();
-  const targetUser = userRepo
-    .getUsers()
-    .find((it) => it.refreshToken === refreshToken);
+  const targetUser = await User.findOne({ refreshToken });
 
   if (!targetUser) {
     res.sendStatus(401);

@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
-const mockUserRepo = require("../mocks/mockUserRepo");
+const User = require("../models/userModel");
 
 const registerUser = async (req, res) => {
   const { errors } = validationResult(req);
@@ -11,15 +11,19 @@ const registerUser = async (req, res) => {
 
   const { username, pwd } = req.body;
 
-  const userRepo = mockUserRepo();
-  const users = userRepo.getUsers();
-  if (users.find((it) => it.username === username)) {
+  const duplicate = await User.findOne({ username: username });
+  if (duplicate) {
+    console.log("Duplicate found: ", duplicate);
     return res.sendStatus(409);
   }
 
   const hashedPwd = await bcrypt.hash(pwd, 10);
-  userRepo.addUser(username, hashedPwd);
-  console.log(userRepo.getUsers());
+
+  await User.create({
+    username,
+    pwd: hashedPwd
+  });
+
   return res.sendStatus(201);
 };
 
